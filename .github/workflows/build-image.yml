@@ -37,6 +37,11 @@ jobs:
            arch: ppc64le
            platforms: linux/ppc64le
            runs-on: ubuntu-24.04-ppc64le
+         - prefix: musllinux
+           version: '1_2'
+           arch: ppc64le
+           platforms: linux/ppc64le
+           runs-on: ubuntu-24.04-ppc64le
     steps:
     - uses: actions/checkout@v4
 
