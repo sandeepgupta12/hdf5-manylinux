@@ -7,3 +7,29 @@ COPY install_libaec.sh /tmp/install_libaec.sh
 RUN bash /tmp/install_libaec.sh
 COPY install_hdf5.sh /tmp/install_hdf5.sh
 RUN bash /tmp/install_hdf5.sh
+
+# ---------------------------
+# Install build dependencies
+# ---------------------------
+RUN yum install -y git gcc gcc-c++ make \
+    openblas-devel lapack-devel \
+    python3-devel meson ninja-build
+    
+# ---------------------------
+# Build NumPy wheels inside image
+# ---------------------------
+RUN git clone --depth 1 --recurse-submodules https://github.com/numpy/numpy.git /tmp/numpy-build
+
+RUN for PYBIN in /opt/python/cp3{9,10,11,12,13}-*/bin; do \
+      echo "Building NumPy using $PYBIN"; \
+      cd /tmp/numpy-build; \
+      ${PYBIN}/pip install -U pip setuptools wheel meson ninja meson-python Cython; \
+      export MESONPY_USE_SYSTEM_MESON=1; \
+      ${PYBIN}/python -m build --wheel --no-isolation -v; \
+      # Install the wheel to the Python version
+      ${PYBIN}/pip install dist/numpy-*.whl; \
+      rm -rf dist build _skbuild .mesonpy-*; \
+    done
+
+# Clean workspace
+RUN rm -rf /tmp/numpy-build
